@@ -1,0 +1,21 @@
+item_id,name,category,price,stock,description,manufacturer,weight,image_url,client_id,client_name,client_email,purchase_date,purchase_quantity
+1,Item A,Food,9.99,1000,"Premium pet food","ABC Pet Foods",2.0,https://example.com/item-a.jpg,client123,John Doe,johndoe@example.com,2023-09-01T10:30:00Z,2
+2,Item B,Toys,5.99,500,"Interactive toy for pets","Pet Fun Co.",0.5,https://example.com/item-b.jpg,client123,John Doe,johndoe@example.com,2023-09-03T15:45:00Z,1
+3,Item C,Accessories,12.99,300,"Pet collar for dogs","Pet Accessories Inc.",0.2,https://example.com/item-c.jpg,client456,Jane Smith,janesmith@example.com,2023-08-25T11:20:00Z,1
+4,Item D,Food,7.49,750,"Healthy cat food","Healthy Pets Ltd.",1.5,https://example.com/item-d.jpg,client789,Mark Johnson,markjohnson@example.com,2023-09-05T14:10:00Z,3
+5,Item E,Toys,3.49,800,"Catnip ball for cats","Cat Playtime",0.3,https://example.com/item-e.jpg,,,,,
+6,Item F,Accessories,8.99,450,"Pet leash for dogs","Leash Master",0.8,https://example.com/item-f.jpg,,,,,
+7,Item G,Food,6.79,600,"High-protein dog food","Protein Paws",1.2,https://example.com/item-g.jpg,,,,,
+8,Item H,Toys,4.29,350,"Squeaky chew toy for dogs","SqueakMaster",0.6,https://example.com/item-h.jpg,,,,,
+9,Item I,Accessories,15.49,200,"Cat grooming kit","GroomIt",0.9,https://example.com/item-i.jpg,,,,,
+10,Item J,Food,10.99,900,"Organic cat food","Organic Pets Inc.",1.8,https://example.com/item-j.jpg,,,,,
+11,Item K,Toys,6.59,400,"Interactive treat dispenser","TreatTime",0.7,https://example.com/item-k.jpg,,,,,
+12,Item L,Accessories,14.99,250,"Pet bed for small dogs","ComfyBeds",1.5,https://example.com/item-l.jpg,,,,,
+13,Item M,Food,8.49,850,"Grain-free dog food","GrainFree Co.",1.3,https://example.com/item-m.jpg,,,,,
+14,Item N,Toys,7.79,550,"Feather wand for cats","FeatherFun",0.4,https://example.com/item-n.jpg,,,,,
+15,Item O,Accessories,9.99,350,"Dog raincoat","RainyDays",0.9,https://example.com/item-o.jpg,,,,,
+16,Item P,Food,11.99,700,"Specialty bird food","BirdLovers",0.5,https://example.com/item-p.jpg,,,,,
+17,Item Q,Toys,5.99,480,"Interactive puzzle toy","PuzzlePaws",0.7,https://example.com/item-q.jpg,,,,,
+18,Item R,Accessories,12.49,320,"Pet ID tag","TagMaster",0.1,https://example.com/item-r.jpg,,,,,
+19,Item S,Food,6.99,780,"Kitten formula","KittenCare",1.0,https://example.com/item-s.jpg,,,,,
+20,Item T,Toys,3.99,670,"Ball with bell for cats","BellBall",0.3,https://example.com/item-t.jpg,,,,,
