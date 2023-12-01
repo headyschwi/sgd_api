@@ -9,6 +9,7 @@ ARG MYSQL_PORT
 # Set the root password and database for the MySQL server
 ENV MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
 ENV MYSQL_DATABASE=${MYSQL_DATABASE}
+ENV MYSQL_PORT=${MYSQL_PORT}
 
 # Expose the default MySQL port
 EXPOSE ${MYSQL_PORT}
