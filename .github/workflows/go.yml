@@ -1,0 +1,27 @@
+name: Build and Deploy MySQL Container
+
+on: [push]
+
+jobs:
+    build:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+  
+      - name: Build Docker image
+        run: |
+          docker build . --file Dockerfile \
+            --build-arg MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            --build-arg MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
+            --build-arg MYSQL_PORT=${{ secrets.MYSQL_PORT }} \
+            --tag my-mysql-image
+  
+      - name: Start Docker container
+        run: |
+          docker run -d \
+            -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
+            -p ${{ secrets.MYSQL_PORT }}:3306 \
+            my-mysql-image
+  
