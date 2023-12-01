@@ -21,8 +21,5 @@ ENV MYSQL_PORT=${MYSQL_PORT}
 ENV MYSQL_CHARSET=${MYSQL_CHARSET}
 ENV MYSQL_COLLATION=${MYSQL_COLLATION}
 
-# Copy any SQL scripts to initialize the database
-COPY init.sql /docker-entrypoint-initdb.d/
-
 # Expose the MySQL port
 EXPOSE ${MYSQL_PORT}
