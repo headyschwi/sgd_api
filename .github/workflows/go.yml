@@ -1,42 +1,41 @@
-name: Build and Deploy MySQL Container
+name: Build and Test
 
 on: [push]
 
 jobs:
-  Build:
-    runs-on: ubuntu-latest
-    env: 
-      DB_USERNAME: root
-      DB_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-      DB_HOST: mysql-container  # Nome do container do MySQL
-      DB_PORT: 3306              # Porta padrão do MySQL
-      DB_NAME: ${{ secrets.MYSQL_DATABASE }}
-
-    steps:
-    - name: Check out repository
-      uses: actions/checkout@v2
-
-    - name: Build MySQL image
-      run: |
-        docker build . --file Dockerfile.mysql \
-          --build-arg MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
-          --build-arg MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
-          --tag my-mysql-image
-
-    - name: Start MySQL server container
-      run: |
-        docker run -d \
-          --name mysql-container \
-          -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
-          -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
-          -p ${{ secrets.MYSQL_PORT }}:3306 \
-          my-mysql-image
-
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: '1.21.0'  # Ou a versão que você está usando
-
-    - name: Test main.go
-      run: |
-        go run main.go
+    Build:
+      runs-on: ubuntu-latest
+      env: 
+        DB_USERNAME: root
+        DB_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+        DB_HOST: 127.0.0.1
+        DB_PORT: ${{ secrets.MYSQL_PORT }}
+        DB_NAME: ${{ secrets.MYSQL_DATABASE }}
+      
+      steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+  
+      - name: Build MySQL image
+        run: |
+          docker build . --file Dockerfile.mysql \
+            --build-arg MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            --build-arg MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
+            --tag my-mysql-image
+  
+      - name: Start MySQL server container
+        run: |
+          docker run -d \
+            -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
+            -p ${{ secrets.MYSQL_PORT }}:3306 \
+            my-mysql-image
+        
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.21.0'  # Ou a versão que você está usando
+      
+      - name: Test main.go
+        run: |
+          go run main.go
