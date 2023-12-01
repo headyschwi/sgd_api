@@ -22,6 +22,6 @@ jobs:
           docker run -d \
             -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
             -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
-            -p ${{ secrets.MYSQL_PORT }}:${{ secrets.MYSQL_PORT }} \
+            -p ${{ secrets.MYSQL_PORT }}:3306 \
             my-mysql-image
-  
+    
