@@ -34,7 +34,7 @@ jobs:
 
       - name: Build API image
         run: |
-          docker build . --file Dockerfile \
+          docker build . --file Dockerfile.api \
             --build-arg API_PORT=${{ env.API_PORT }} \
             --tag my-api-image
 
