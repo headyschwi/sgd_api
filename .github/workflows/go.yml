@@ -3,7 +3,7 @@ name: Build and Deploy MySQL Container
 on: [push]
 
 jobs:
-    build:
+    Build:
       runs-on: ubuntu-latest
       steps:
       - name: Check out repository
@@ -17,11 +17,27 @@ jobs:
             --build-arg MYSQL_PORT=${{ secrets.MYSQL_PORT }} \
             --tag my-mysql-image
   
-      - name: Start Docker container
+      - name: Start MySQL server container
         run: |
           docker run -d \
             -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
             -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
             -p ${{ secrets.MYSQL_PORT }}:3306 \
             my-mysql-image
-    
+        
+      - name: Build API image
+        run: |
+          docker build . --file Dockerfile \
+            --build-arg MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            --build-arg MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
+            --build-arg MYSQL_PORT=${{ secrets.MYSQL_PORT }} \
+            --tag my-api-image
+            
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.21.0'  # Ou a versão que você está usando
+      
+      - name: Test main.go
+        run: |
+          go run main.go
