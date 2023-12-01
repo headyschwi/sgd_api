@@ -10,6 +10,7 @@ import (
 func clientsRoutes(r *gin.Engine, clientController *controllers.ClientController, cartController *controllers.CartController, db *gorm.DB) {
 
 	clients := r.Group("/clients")
+	clients.POST("", clientController.CreateClient)
 	clients.GET("", clientController.GetClients)
 	clients.GET("/:client_id", clientController.GetClient)
 	clients.PATCH("/:client_id", clientController.UpdateClient)

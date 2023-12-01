@@ -13,9 +13,12 @@ class TestClients(unittest.TestCase):
         }
 
         response = requests.post(url, json=data)
-        self.assertEqual(response.status_code, 201)
-    
+        if response.status_code != 201:
+            raise Exception('Erro ao criar cliente')
+
     def teste_getClients(self):
         url = 'http://localhost:'+port+'/clients'
         response = requests.get(url)
-        self.assertEqual(response.status_code, 200)
+        
+        if response.status_code != 200:
+            raise Exception('Erro ao buscar clientes')
