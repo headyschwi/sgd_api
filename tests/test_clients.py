@@ -22,3 +22,6 @@ class TestClients(unittest.TestCase):
         
         if response.status_code != 200:
             raise Exception('Erro ao buscar clientes')
+        
+if __name__ == '__main__':
+    unittest.main()
