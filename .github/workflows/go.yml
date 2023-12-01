@@ -49,9 +49,9 @@ jobs:
         with:
           python-version: '3.12.0' 
 
-      # - name: Install Python dependencies
-      #   run: |
-      #     pip install -r requirements.txt 
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt 
 
       - name: Run Python tests
         run: |
