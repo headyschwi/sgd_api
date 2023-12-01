@@ -1,10 +1,6 @@
 # Usar uma imagem base oficial do Go
 FROM golang:1.21 as builder
 
-ARG API_PORT
-
-ENV API_PORT=${API_PORT}
-
 # Definir o diretório de trabalho dentro do container
 WORKDIR /app
 
@@ -24,11 +20,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 # Usar uma imagem scratch para uma imagem mais leve
 FROM scratch
 
-# Copiar o executável
+# Copiar o executávels
 COPY --from=builder /app/main .
 
 # Porta que será exposta
-EXPOSE ${API_PORT}
+EXPOSE 1337
 
 # Comando para rodar o aplicativo
-CMD ["./main"]
+RUN ["go", "run", "main.go"]
