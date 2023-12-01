@@ -1,20 +1,8 @@
-// Package main Swagger API documentation.
-//
-// Schemes: http
-// BasePath: /
-// Version: 1.0.0
-//
-// Consumes:
-// - application/json
-//
-// Produces:
-// - application/json
-//
-// swagger:meta
-
 package main
 
 import (
+	"fmt"
+	"os"
 	"sgd_api/api"
 	"sgd_api/models"
 
@@ -22,33 +10,25 @@ import (
 	"gorm.io/gorm"
 )
 
-// Run the API server
-//
-// swagger:operation POST /api/run operationID
-//
-// ---
-// responses:
-//
-//	'200':
-//	  description: Server started successfully
 func main() {
-	db := database_conection()
+	db := database_connection()
 	db.Migrator().DropTable(&models.Client{}, &models.Cart{}, &models.Order{}, &models.Product{}, &models.CartItem{}, &models.OrderItem{})
 	db.Migrator().AutoMigrate(&models.Client{}, &models.Cart{}, &models.Order{}, &models.Product{}, &models.CartItem{}, &models.OrderItem{})
 	api.Run(8080, db)
 }
 
-// Establish a database connection
-//
-// swagger:operation GET /api/database_conection operationID
-//
-// ---
-// responses:
-//
-//	'200':
-//	  description: Database connected successfully
-func database_conection() *gorm.DB {
-	dsn := "root:root@tcp(localhost:3306)/sgd_api?charset=utf8mb4&parseTime=True&loc=Local"
+func database_connection() *gorm.DB {
+	// Obtém as variáveis de ambiente
+	username := os.Getenv("DB_USERNAME") // substitua 'DB_USERNAME' pelo nome da sua variável de ambiente
+	password := os.Getenv("DB_PASSWORD") // substitua 'DB_PASSWORD' pelo nome da sua variável de ambiente
+	host := os.Getenv("DB_HOST")         // substitua 'DB_HOST' pelo nome da sua variável de ambiente
+	port := os.Getenv("DB_PORT")         // substitua 'DB_PORT' pelo nome da sua variável de ambiente
+	dbname := os.Getenv("DB_NAME")       // substitua 'DB_NAME' pelo nome da sua variável de ambiente
+
+	// Monta a string de conexão usando as variáveis de ambiente
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", username, password, host, port, dbname)
+
+	// Conecta ao banco de dados
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database!")
