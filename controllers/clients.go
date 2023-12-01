@@ -46,7 +46,7 @@ func (cc ClientController) CreateClient(c *gin.Context) {
 	tx.Model(&client).Association("Cart").Append(&cart)
 	tx.Commit()
 
-	c.JSON(http.StatusOK, gin.H{"data": client})
+	c.JSON(http.StatusCreated, gin.H{"data": client})
 
 }
 

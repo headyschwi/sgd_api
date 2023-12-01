@@ -5,16 +5,24 @@ import (
 	"os"
 	"sgd_api/api"
 	"sgd_api/models"
+	"strconv"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 func main() {
+	port_str := os.Getenv("API_PORT")
+
+	port, err := strconv.Atoi(port_str)
+	if err != nil {
+		panic("Failed to convert port to integer!")
+	}
+
 	db := database_connection()
 	db.Migrator().DropTable(&models.Client{}, &models.Cart{}, &models.Order{}, &models.Product{}, &models.CartItem{}, &models.OrderItem{})
 	db.Migrator().AutoMigrate(&models.Client{}, &models.Cart{}, &models.Order{}, &models.Product{}, &models.CartItem{}, &models.OrderItem{})
-	api.Run(8080, db)
+	api.Run(port, db)
 }
 
 func database_connection() *gorm.DB {
