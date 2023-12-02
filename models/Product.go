@@ -7,12 +7,12 @@ import (
 
 type Product struct {
 	gorm.Model
-	Name         string          `json:"name" gorm:"not null;unique"`
+	Name         string          `json:"name" gorm:"not null; unique"`
 	Description  string          `json:"description"`
 	Category     string          `json:"category"`
 	Manufacturer string          `json:"manufacturer"`
-	Stock        int64           `json:"stock"`
-	Price        decimal.Decimal `json:"price"`
+	Stock        int64           `json:"stock" gorm:"not null"`
+	Price        decimal.Decimal `json:"price" gorm:"not null"`
 	Weight       float64         `json:"weight"`
 	Image_url    string          `json:"image_url"`
 }

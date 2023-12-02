@@ -19,29 +19,21 @@ func NewCartController(db *gorm.DB) *CartController {
 
 func (cc CartController) GetCart(c *gin.Context) {
 
-	var input struct {
-		ClientID uint `json:"client_id"`
-	}
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	}
-
 	var cart models.Cart
-	if err := cc.db.Preload("CartItems").Where("client_id = ?", input.ClientID).First(&cart).Error; err != nil {
+	if err := cc.db.Preload("CartItems").Where("client_id = ?", c.Param("client_id")).First(&cart).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cart not found!"})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": cart})
-
 }
 
 func (cc CartController) AddToCart(c *gin.Context) {
 
 	var input struct {
+		ClientID  uint  `json:"client_id"`
 		ProductID uint  `json:"product_id"`
 		Amount    int64 `json:"amount"`
-		ClientID  uint  `json:"client_id"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -54,21 +46,35 @@ func (cc CartController) AddToCart(c *gin.Context) {
 		return
 	}
 
-	var product models.Product
-	if err := cc.db.Where("id = ?", input.ProductID).First(&product).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Product not found!"})
-		return
-	}
+	var existingItem models.CartItem
+	if err := cc.db.Where("cart_id = ? AND product_id = ?", cart.ID, input.ProductID).First(&existingItem).Error; err != nil {
+		var product models.Product
+		if err := cc.db.Where("id = ?", input.ProductID).First(&product).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Product not found!"})
+			return
+		}
 
-	cartItem := models.CartItem{
-		CartID:    cart.ID,
-		ProductID: product.ID,
-		Amount:    input.Amount,
-		Price:     product.Price,
-	}
+		cartItem := models.CartItem{
+			CartID:    cart.ID,
+			ProductID: product.ID,
+			Amount:    input.Amount,
+			Price:     product.Price,
+		}
 
-	cart.CartItems = append(cart.CartItems, cartItem)
-	cart.TotalPrice = cart.TotalPrice.Add(decimal.NewFromFloat(float64(input.Amount)).Mul(product.Price))
+		cart.CartItems = append(cart.CartItems, cartItem)
+		cart.TotalPrice = cart.TotalPrice.Add(decimal.NewFromFloat(float64(input.Amount)).Mul(product.Price))
+
+	} else {
+		var product models.Product
+		if err := cc.db.Where("id = ?", input.ProductID).First(&product).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Product not found!"})
+			return
+		}
+
+		existingItem.Amount += input.Amount
+		existingItem.Price = product.Price
+		cart.TotalPrice = cart.TotalPrice.Add(decimal.NewFromFloat(float64(input.Amount)).Mul(product.Price))
+	}
 
 	tx := cc.db.Begin()
 	if err := tx.Save(&cart).Error; err != nil {
@@ -84,47 +90,102 @@ func (cc CartController) AddToCart(c *gin.Context) {
 func (cc CartController) UpdateCartItem(c *gin.Context) {
 
 	var input struct {
-		Amount int64 `json:"amount"`
-	}
-
-	var cart models.Cart
-	if err := cc.db.Where("client_id = ?", c.Param("client_id")).First(&cart).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cart not found!"})
-	}
-
-	var cartItem models.CartItem
-	if err := cc.db.Where("cart_id = ? AND product_id = ?", cart.ID, c.Param("product_id")).First(&cartItem).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cart item not found!"})
+		ClientID  uint  `json:"client_id"`
+		ProductID uint  `json:"product_id"`
+		Amount    int64 `json:"amount"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	if err := cc.db.Model(&cartItem).Updates(models.CartItem{Amount: input.Amount}).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var cart models.Cart
+	if err := cc.db.Preload("CartItems").Where("client_id = ?", input.ClientID).First(&cart).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cart not found!"})
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": cartItem})
+	var existingItem models.CartItem
+	if err := cc.db.Where("cart_id = ? AND product_id = ?", cart.ID, input.ProductID).First(&existingItem).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Product not found in cart!"})
+		return
+	}
+
+	var product models.Product
+	if err := cc.db.Where("id = ?", input.ProductID).First(&product).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Product not found!"})
+		return
+	}
+
+	cart.TotalPrice = cart.TotalPrice.Sub(decimal.NewFromFloat(float64(existingItem.Amount)).Mul(product.Price))
+	cart.TotalPrice = cart.TotalPrice.Add(decimal.NewFromFloat(float64(input.Amount)).Mul(product.Price))
+
+	existingItem.Amount = input.Amount
+	existingItem.Price = product.Price
+
+	tx := cc.db.Begin()
+	if err := tx.Save(&cart).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := tx.Save(&existingItem).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx.Commit()
+	c.JSON(http.StatusOK, gin.H{"data": cart})
 }
 
 func (cc CartController) RemoveFromCart(c *gin.Context) {
 
-	var cart models.Cart
-	if err := cc.db.Where("client_id = ?", c.Param("client_id")).First(&cart).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cart not found!"})
+	var input struct {
+		ClientID  uint `json:"client_id"`
+		ProductID uint `json:"product_id"`
 	}
 
-	var cartItem models.CartItem
-	if err := cc.db.Where("cart_id = ? AND product_id = ?", cart.ID, c.Param("product_id")).First(&cartItem).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cart item not found!"})
-	}
-
-	if err := cc.db.Delete(&cartItem).Error; err != nil {
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": true})
+	var cart models.Cart
+	if err := cc.db.Preload("CartItems").Where("client_id = ?", input.ClientID).First(&cart).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cart not found!"})
+		return
+	}
+
+	var existingItem models.CartItem
+	if err := cc.db.Where("cart_id = ? AND product_id = ?", cart.ID, input.ProductID).First(&existingItem).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Product not found in cart!"})
+		return
+	}
+
+	var product models.Product
+	if err := cc.db.Where("id = ?", input.ProductID).First(&product).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Product not found!"})
+		return
+	}
+
+	cart.TotalPrice = cart.TotalPrice.Sub(decimal.NewFromFloat(float64(existingItem.Amount)).Mul(product.Price))
+
+	tx := cc.db.Begin()
+	if err := tx.Save(&cart).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := tx.Delete(&existingItem).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tx.Commit()
+	c.JSON(http.StatusOK, gin.H{"data": cart})
 }
 
 func (cc CartController) Checkout(c *gin.Context) {
@@ -172,7 +233,6 @@ func (cc CartController) Checkout(c *gin.Context) {
 			return
 		}
 
-		// Busque o produto do banco de dados
 		var product models.Product
 		if err := tx.Where("id = ?", item.ProductID).First(&product).Error; err != nil {
 			tx.Rollback()
@@ -180,7 +240,6 @@ func (cc CartController) Checkout(c *gin.Context) {
 			return
 		}
 
-		// Verifique se há estoque suficiente
 		if product.Stock < item.Amount {
 			tx.Rollback()
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Not enough stock for product!"})
@@ -189,7 +248,6 @@ func (cc CartController) Checkout(c *gin.Context) {
 
 		product.Stock -= item.Amount
 
-		// Reduza o estoque do produto
 		if err := tx.Save(&product).Error; err != nil {
 			tx.Rollback()
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not update product stock!"})

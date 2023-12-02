@@ -7,8 +7,8 @@ import (
 
 type Cart struct {
 	gorm.Model
-	ClientID   uint            `gorm:"not null;unique"` // One to one relationship
-	CartItems  []CartItem      `gorm:"foreignkey:CartID; delete:cascade"`
+	ClientID   uint            `gorm:"not null"`
+	CartItems  []CartItem      `gorm:"foreignkey:CartID;association_foreignkey:ID;delete:cascade"`
 	TotalPrice decimal.Decimal `gorm:"not null"`
 }
 

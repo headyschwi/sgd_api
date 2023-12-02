@@ -93,14 +93,17 @@ func (cc ClientController) UpdateClient(c *gin.Context) {
 }
 
 func (cc ClientController) DeleteClient(c *gin.Context) {
-	var client models.Client
 
-	if err := cc.db.First(&client, c.Param("id")).Error; err != nil {
+	client_id := c.Param("client_id")
+
+	// Delete client's cart
+	if err := cc.db.Where("client_id = ?", client_id).Delete(&models.Cart{}).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := cc.db.Delete(&client).Error; err != nil {
+	// Delete client
+	if err := cc.db.Delete(&models.Client{}, client_id).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

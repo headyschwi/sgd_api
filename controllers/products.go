@@ -19,7 +19,18 @@ func NewProductController(db *gorm.DB) *ProductsController {
 func (pc *ProductsController) CreateProduct(c *gin.Context) {
 	var product models.Product
 
-	if err := c.ShouldBindJSON(&product); err != nil {
+	var input struct {
+		Name         string  `json:"name" `
+		Description  string  `json:"description"`
+		Category     string  `json:"category"`
+		Manufacturer string  `json:"manufacturer"`
+		Stock        int64   `json:"stock"`
+		Price        float64 `json:"price"`
+		Weight       float64 `json:"weight"`
+		Image_url    string  `json:"image_url"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
@@ -27,7 +38,7 @@ func (pc *ProductsController) CreateProduct(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": product})
+	c.JSON(http.StatusCreated, gin.H{"data": product})
 }
 
 func (pc *ProductsController) GetProducts(c *gin.Context) {

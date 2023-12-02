@@ -9,12 +9,12 @@ import (
 
 func productsRoutes(r *gin.Engine, productController *controllers.ProductsController, db *gorm.DB) {
 
-	products := r.Group("/products")
+	products := r.Group("/produtos")
 
-	products.POST("", productController.CreateProduct)
-	products.GET("", productController.GetProducts)
+	products.POST("/", productController.CreateProduct)
+	products.GET("/", productController.GetProducts)
 	products.GET("/:product_id", productController.GetProduct)
-	products.PATCH("/:product_id", productController.UpdateProduct)
+	products.PUT("/:product_id", productController.UpdateProduct)
 	products.DELETE("/:product_id", productController.DeleteProduct)
 
 	products.GET("/:product_id/orderswith", productController.GetOrderWithProduct)
